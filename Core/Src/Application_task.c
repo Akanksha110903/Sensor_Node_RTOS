@@ -72,16 +72,20 @@ void CLI_task(void *pvParameters)
     while (1)
     {
         // CLI task code
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        ulTaskNotifyTake(pdTRUE,portMAX_DELAY);//wait to get notification from USART3 interrupt handler
+        CLI_ParseCommand((char *)cmdBuf);//parse the command received from USART3 interrupt handler
+        
     }
 }
 
 void Print_task(void *pvParameters)
-{
+{ 
+    char rxBuf[100];
     while (1)
     {
         // Print task code
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        xQueueReceive(printDataQueue, rxBuf, portMAX_DELAY);//wait to receive data from other tasks to print
+        USART3_SendString(rxBuf);//send the data to usart for printing
     }
 }
 

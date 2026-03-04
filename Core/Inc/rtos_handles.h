@@ -27,7 +27,7 @@ extern TaskHandle_t print_task_handle;
 extern TaskHandle_t monitor_task_handle;
 extern sensor_state_t g_sensorData;
 extern SemaphoreHandle_t sensorMutex;
-extern QueueHandle_t sensorDataQueue;
+extern QueueHandle_t printDataQueue;
 
 
 #endif /* RTOS_HANDLES_H */

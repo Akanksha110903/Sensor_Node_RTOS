@@ -22,6 +22,11 @@
 #include "stm32f4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "FreeRTOS.h"
+#include "task.h"
+#include "rtos_handles.h"
+#include "cli.h"
+#include "stm32f4xx_ll_usart.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -199,5 +204,39 @@ void DebugMon_Handler(void)
 /******************************************************************************/
 
 /* USER CODE BEGIN 1 */
+void USART3_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART3_IRQn 0 */
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+    if (LL_USART_IsActiveFlag_RXNE(USART3))
+    {
+        char c = LL_USART_ReceiveData8(USART3);
+
+        if (c == '\n' || c == '\r')
+        {
+            cmdBuf[cmdIndex] = '\0';
+            cmdIndex = 0;
+
+            // Notify CLI task
+            vTaskNotifyGiveFromISR(cli_task_handle, &xHigherPriorityTaskWoken);
+        }
+        else
+        {
+            if (cmdIndex < CMD_BUF_SIZE - 1)
+                cmdBuf[cmdIndex++] = c;
+        }
+    }
+
+    if (LL_USART_IsActiveFlag_ORE(USART3))
+        LL_USART_ClearFlag_ORE(USART3);
+
+
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+  /* USER CODE END USART3_IRQn 0 */
+  /* USER CODE BEGIN USART3_IRQn 1 */
+
+  /* USER CODE END USART3_IRQn 1 */
+}
 
 /* USER CODE END 1 */

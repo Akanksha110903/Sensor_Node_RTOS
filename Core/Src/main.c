@@ -8,6 +8,7 @@
 #include "tim.h"
 #include "rtos_handles.h"
 #include "clock_config.h"
+#include "usart.h"
 
 
 // Private define
@@ -20,7 +21,7 @@ TaskHandle_t print_task_handle;
 TaskHandle_t monitor_task_handle;
 sensor_state_t g_sensorData;
 SemaphoreHandle_t sensorMutex;
-QueueHandle_t sensorDataQueue;
+QueueHandle_t printDataQueue;
 BaseType_t status;
 
 //Private define
@@ -34,6 +35,7 @@ int main(void)
   // System initialization
   SystemClock_Config();
   PeriphCommonClock_Config();
+  USART3_UART_Init();          //USART initialization for cli task and print task
   TIM3_Init();                //timer initialization for pwm signal generation for led control  
   ADC_Init();                 //adc init for temperature and potentiometer conversion
   TIM_Init();                 //timer initialization for timer triggerd adc
@@ -43,7 +45,7 @@ int main(void)
 
   //Mutex creation
     sensorMutex = xSemaphoreCreateMutex();
-    sensorDataQueue = xQueueCreate(10, sizeof(sensor_state_t));//queue creation
+    printDataQueue = xQueueCreate(10, 100);//queue creation
     status = xTaskCreate(Communication_task, "Communication", 250, NULL, 4, &communication_task_handle);
     status = xTaskCreate(ADC_task, "ADC", 250, NULL, 3, &adc_task_handle);
     status = xTaskCreate(Accelerometer_task, "Accelerometer", 250, NULL, 3, &accelerometer_task_handle);

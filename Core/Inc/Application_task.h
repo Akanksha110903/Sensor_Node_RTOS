@@ -5,6 +5,8 @@
 #include "adc.h"
 #include "tim.h"
 #include "stm32f4xx_ll_tim.h"
+#include "cli.h"
+#include "usart.h"
 
 
 extern volatile uint8_t pwm_percentage;
